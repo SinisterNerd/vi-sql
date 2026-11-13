@@ -37,6 +37,7 @@ var (
 	jumpInto            string
 	resetMasterPassword bool
 	connectDSN          string
+	hideSchemas         bool
 	rootCmd             = &cobra.Command{
 		Use:   "vi-sql",
 		Short: "SQL TUI client",
@@ -61,6 +62,7 @@ func init() {
 	rootCmd.Flags().Bool("gen-key", false, "Generate a random encryption key for use with VI_SQL_SECRET_KEY")
 	rootCmd.Flags().StringVarP(&jumpInto, "jump", "j", "", "Jump directly to given table (format: schema-name.table-name)")
 	rootCmd.Flags().BoolVar(&resetMasterPassword, "reset-master-password", false, "Reset master password (clears wrapped key and erases encrypted connection passwords)")
+	rootCmd.Flags().BoolVar(&hideSchemas, "hide-schemas", false, "Start with the schemas panel hidden (toggle it back with the hide schema key)")
 	rootCmd.Flags().StringVar(&connectDSN, "connect", "", "Connect directly using a DSN (e.g. postgresql://user:pass@host/db, file:/home/user/sqlite.db)")
 }
 
@@ -125,6 +127,8 @@ func runApp(cmd *cobra.Command, args []string) {
 			} else {
 				fatalf("jump value cannot be empty")
 			}
+		case "hide-schemas":
+			cfg.HideSchemas = hideSchemas
 		case "reset-master-password":
 			runResetMasterPassword(cfg)
 			os.Exit(0)

@@ -90,6 +90,7 @@ type Config struct {
 	Connections        []SQLConfig    `yaml:"-"`
 	Styles             StylesConfig   `yaml:"styles"`
 	JumpInto           string         `yaml:"-"`
+	HideSchemas        bool           `yaml:"-"`
 	ConfigPath         string         `yaml:"-"`
 	FirstLaunch        bool           `yaml:"-"`
 	PendingConnect     string         `yaml:"-"`

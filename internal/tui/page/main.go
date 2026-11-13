@@ -438,7 +438,10 @@ func (m *Main) render() {
 		schemaPanelWidth = 30
 	}
 
-	m.AddItem(m.schemas, schemaPanelWidth, 0, true)
+	hideSchemas := m.App.GetConfig().HideSchemas
+	if !hideSchemas {
+		m.AddItem(m.schemas, schemaPanelWidth, 0, true)
+	}
 	m.AddItem(m.innerFlex, 0, 7, false)
 	if m.footerHeight == 0 {
 		m.footerHeight = 2
@@ -448,7 +451,11 @@ func (m *Main) render() {
 	m.openNewQueryTab()
 
 	m.App.Pages.AddPage(m.GetIdentifier(), m, true, true)
-	m.App.SetFocus(m.schemas)
+	if hideSchemas {
+		m.setFocusToActiveTab()
+	} else {
+		m.App.SetFocus(m.schemas)
+	}
 }
 
 func (m *Main) rebuildInnerFlex() {

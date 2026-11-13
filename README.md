@@ -96,6 +96,12 @@ Jump straight to a table:
 vi-sql --jump public/users
 ```
 
+Start with the schemas panel hidden (press the hide schema key, `|` by default, to bring it back):
+
+```sh
+vi-sql --hide-schemas
+```
+
 Config and data paths vary by OS. Run `vi-sql --paths` to see the exact locations on your system (Config, Keybindings, Styles, Icons, and Log).
 
 ## MCP server
