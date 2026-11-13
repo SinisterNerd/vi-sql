@@ -96,6 +96,12 @@ Jump straight to a table:
 vi-sql --jump public/users
 ```
 
+Open one or more SQL files, each in its own query tab (the query is loaded, not executed):
+
+```sh
+vi-sql --connection-name mydb --file report.sql --file cleanup.sql
+```
+
 Config and data paths vary by OS. Run `vi-sql --paths` to see the exact locations on your system (Config, Keybindings, Styles, Icons, and Log).
 
 ## MCP server

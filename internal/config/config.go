@@ -93,6 +93,14 @@ type Config struct {
 	ConfigPath         string         `yaml:"-"`
 	FirstLaunch        bool           `yaml:"-"`
 	PendingConnect     string         `yaml:"-"`
+	OpenFiles          []QueryFile    `yaml:"-"`
+}
+
+// QueryFile is a SQL file passed on the command line (--file) to be loaded
+// into a query tab on startup.
+type QueryFile struct {
+	Name    string
+	Content string
 }
 
 func LoadConfigWithVersion(version string, customPath string) (*Config, error) {

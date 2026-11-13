@@ -488,6 +488,13 @@ func (a *App) initAndRenderMain() {
 		a.main.SetUpdateHandler(func() { a.startSelfUpdate(a.latestVersion) })
 	}
 
+	if files := a.GetConfig().OpenFiles; len(files) > 0 {
+		a.GetConfig().OpenFiles = nil
+		go a.Application.QueueUpdateDraw(func() {
+			a.main.OpenQueryFiles(files)
+		})
+	}
+
 	if jumpInto := a.GetConfig().JumpInto; jumpInto != "" {
 		// Defer past the first draw so TabBar sees the real terminal width
 		go a.Application.QueueUpdateDraw(func() {

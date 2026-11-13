@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	runtimeDebug "runtime/debug"
 	"strings"
 
@@ -37,6 +38,7 @@ var (
 	jumpInto            string
 	resetMasterPassword bool
 	connectDSN          string
+	queryFiles          []string
 	rootCmd             = &cobra.Command{
 		Use:   "vi-sql",
 		Short: "SQL TUI client",
@@ -61,6 +63,7 @@ func init() {
 	rootCmd.Flags().Bool("gen-key", false, "Generate a random encryption key for use with VI_SQL_SECRET_KEY")
 	rootCmd.Flags().StringVarP(&jumpInto, "jump", "j", "", "Jump directly to given table (format: schema-name.table-name)")
 	rootCmd.Flags().BoolVar(&resetMasterPassword, "reset-master-password", false, "Reset master password (clears wrapped key and erases encrypted connection passwords)")
+	rootCmd.Flags().StringArrayVarP(&queryFiles, "file", "f", nil, "Open a SQL file in a query tab on startup (repeatable)")
 	rootCmd.Flags().StringVar(&connectDSN, "connect", "", "Connect directly using a DSN (e.g. postgresql://user:pass@host/db, file:/home/user/sqlite.db)")
 }
 
@@ -124,6 +127,18 @@ func runApp(cmd *cobra.Command, args []string) {
 				cfg.ShowOptionsPage = false
 			} else {
 				fatalf("jump value cannot be empty")
+			}
+		case "file":
+			files, err := readQueryFiles(queryFiles)
+			if err != nil {
+				fatalf("%v", err)
+			}
+			cfg.OpenFiles = files
+			if !cmd.Flags().Changed("connection-page") {
+				cfg.ShowConnectionPage = false
+			}
+			if !cmd.Flags().Changed("options-page") {
+				cfg.ShowOptionsPage = false
 			}
 		case "reset-master-password":
 			runResetMasterPassword(cfg)
@@ -198,6 +213,25 @@ func runApp(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error running app")
 	}
+}
+
+func readQueryFiles(paths []string) ([]config.QueryFile, error) {
+	files := make([]config.QueryFile, 0, len(paths))
+	for _, p := range paths {
+		info, err := os.Stat(p)
+		if err != nil {
+			return nil, fmt.Errorf("cannot open file %q: %v", p, err)
+		}
+		if info.IsDir() {
+			return nil, fmt.Errorf("%q is a directory, expected a SQL file", p)
+		}
+		content, err := os.ReadFile(p)
+		if err != nil {
+			return nil, fmt.Errorf("reading file %q: %v", p, err)
+		}
+		files = append(files, config.QueryFile{Name: filepath.Base(p), Content: string(content)})
+	}
+	return files, nil
 }
 
 func listAvailableConnections(cfg *config.Config) {

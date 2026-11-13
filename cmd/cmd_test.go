@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -219,4 +220,20 @@ func TestParseConnectFlag(t *testing.T) {
 			assert.Equal(t, tt.wantDSN, dsn)
 		})
 	}
+}
+
+func TestReadQueryFiles(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "a.sql")
+	require.NoError(t, os.WriteFile(path, []byte("SELECT 1;"), 0o644))
+
+	files, err := readQueryFiles([]string{path})
+	require.NoError(t, err)
+	assert.Equal(t, []config.QueryFile{{Name: "a.sql", Content: "SELECT 1;"}}, files)
+
+	_, err = readQueryFiles([]string{filepath.Join(dir, "missing.sql")})
+	assert.Error(t, err)
+
+	_, err = readQueryFiles([]string{dir})
+	assert.Error(t, err)
 }

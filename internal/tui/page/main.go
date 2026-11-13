@@ -292,6 +292,31 @@ func (m *Main) openNewQueryTabWithQuery(query string, execute bool) {
 	}
 }
 
+// OpenQueryFiles loads each file into its own query tab. The first file takes
+// over the initial blank query tab if it hasn't been used yet.
+func (m *Main) OpenQueryFiles(files []config.QueryFile) {
+	if len(files) == 0 {
+		return
+	}
+	if len(m.queryTabs) == 1 && m.topBar.GetTabCount() == 1 && m.queryTabs[0].IsCleanQueryTab() {
+		var n int
+		if _, err := fmt.Sscanf(m.topBar.GetActiveTabName(), QueryTabName, &n); err == nil {
+			delete(m.queryTabNums, n)
+		}
+		m.queryTabs = m.queryTabs[:0]
+		m.topBar.ClearAllTabs()
+	}
+	for _, f := range files {
+		m.openNewQueryTabFull("", f.Name)
+		if len(m.queryTabs) == 0 {
+			return
+		}
+		m.queryTabs[len(m.queryTabs)-1].SetEditorText(f.Content)
+	}
+	m.topBar.SwitchToTabByName(files[0].Name, widget.KindQuery)
+	m.rebuildInnerFlex()
+}
+
 func (m *Main) openNewQueryTab() {
 	m.openNewQueryTabFull("", "")
 }
